@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smartphone Recommendation Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="my-5">Recommendation Results</h1>
+        <div class="d-flex justify-content-between mb-7">
+            <div class="text-left">
+                <p class="mb-1">Price Range: {{ pr }}</p>
+                <p class="mb-1">Preference: {{ priorities }}</p>
+            </div>
+            <div class="text-right">
+                <form action="/ahp" method="post" class="d-inline">
+                    <input type="hidden" name="price_range" value="{{ pricerange }}">
+                    <input type="hidden" name="priorities" value="{{ priorities }}">
+                    <input type="hidden" name="filtered_data" value="{{ table_html }}">
+                    <button type="submit" class="btn btn-primary mb-1">Proceed</button>
+                </form>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped recommendation-table">
+                {{ table_html | safe }}
+            </table>
+        </div>
+    </div>
+</body>
+</html>

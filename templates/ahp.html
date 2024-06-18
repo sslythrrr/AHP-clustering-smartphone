@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="my-4">AHP Results</h1>
+        <h2 class="mt-4 mb-3">BEST 10 {{ priorities.upper() }} SMARTPHONE in Range {{ pricerange }}</h2>
+        <div class="row">
+            <div class="col-12">
+                <canvas id="ahpChart"></canvas>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="table-responsive">
+                    <table class="table ahp-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Smartphone</th>
+                                <th>AHP Score</th>
+                                <th>CPU Cores</th>
+                                <th>CPU Clock</th>
+                                <th>RAM</th>
+                                <th>ROM</th>
+                                <th>Screen</th>
+                                <th>Camera</th>
+                                <th>Battery</th>
+                                <th>Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in table_data %}
+                            <tr>
+                                <td>{{ row.Rank }}</td>
+                                <td>{{ row.Model }}</td>
+                                <td>{{ "{:.4f}".format(row.AHP_Score) }}</td>
+                                <td>{{ row['CPU Cores'] }}</td>
+                                <td>{{ row['Speed (GHz)'] }} GHz</td>
+                                <td>{{ row['RAM (GB)'] }} GB</td>
+                                <td>{{ row['ROM (GB)'] }} GB</td>
+                                <td>{{ row['Screen (in)'] }} inch</td>
+                                <td>{{ row['Camera (MP)'] }} MP</td>
+                                <td>{{ row['Battery (mAh)'] }} mAh</td>
+                                <td>Rp {{ row['Harga (RP)'] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const chartData = {{ chart_data|tojson }};
+            const labels = chartData.map(item => item.Model);
+            const scores = chartData.map(item => item.AHP_Score);
+            const backgroundColors = [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)',
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)'
+            ];
+            const borderColors = [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)',
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)'
+            ];
+
+            const ctx = document.getElementById('ahpChart').getContext('2d');
+            const ahpChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'AHP Score',
+                        data: scores,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    return `AHP Score: ${tooltipItem.raw}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
