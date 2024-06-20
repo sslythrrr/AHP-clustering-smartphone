@@ -27,26 +27,23 @@ def format_price_range(price_range):
     return f"{min_price_formatted} - {max_price_formatted}"
 
 def get_filtered_recommendations(price_range, priority):
-    # Load the Excel file
     df = pd.read_excel('smartphone.xlsx')
 
-    # Filter based on the price range
     min_price, max_price = map(int, price_range.split('-'))
     filtered_df = df[(df['Harga (RP)'] >= min_price) & (df['Harga (RP)'] <= max_price)]
 
-    # Normalizing and Clustering
     features = filtered_df[['CPU Cores', 'Speed (GHz)', 'RAM (GB)', 'ROM (GB)', 'Screen (in)', 'Camera (MP)', 'Battery (mAh)']]
     scaler = MinMaxScaler()
     features_scaled = scaler.fit_transform(features)
 
-    n_clusters = 3  # Number of cluster
+    n_clusters = 3
 
     if priority == 'performance':
-        performance_features = features_scaled[:, [0, 1, 2, 3]]  # CPU Cores, Speed (GHz), RAM (GB), ROM (GB)
+        performance_features = features_scaled[:, [0, 1, 2, 3]]
         kmeans = KMeans(n_clusters=n_clusters, random_state=42).fit(performance_features)
         cluster_scores = kmeans.transform(performance_features).sum(axis=1)
     elif priority == 'multimedia':
-        multimedia_features = features_scaled[:, [5, 4, 3, 6]]  # Camera (MP), Screen (in), ROM (GB), Battery (mAh)
+        multimedia_features = features_scaled[:, [5, 4, 3, 6]]
         kmeans = KMeans(n_clusters=n_clusters, random_state=42).fit(multimedia_features)
         cluster_scores = kmeans.transform(multimedia_features).sum(axis=1)
     elif priority == 'allrounder':
@@ -56,16 +53,12 @@ def get_filtered_recommendations(price_range, priority):
     filtered_df['Cluster'] = kmeans.labels_
     filtered_df['Cluster_Score'] = cluster_scores
 
-    # Menentukan klaster terbaik berdasarkan rata-rata skor fitur dalam klaster
     best_cluster = filtered_df.groupby('Cluster')['Cluster_Score'].mean().idxmin()
 
-    # Filter berdasarkan klaster terbaik
     best_cluster_df = filtered_df[filtered_df['Cluster'] == best_cluster]
 
-    # Filter ulang berdasarkan rentang harga untuk memastikan hanya harga yang diinginkan yang ditampilkan
     best_cluster_df = best_cluster_df[(best_cluster_df['Harga (RP)'] >= min_price) & (best_cluster_df['Harga (RP)'] <= max_price)]
 
-    # Drop the 'Cluster' and 'Cluster_Score' columns
     best_cluster_df = best_cluster_df.drop(columns=['Cluster', 'Cluster_Score'])
 
     return best_cluster_df
@@ -82,29 +75,25 @@ def recommendation():
     priority = priorities[0]
     pr = price_range
     
-    # Load the Excel file
     df = pd.read_excel('smartphone.xlsx')
 
-    # Total count of rows in the dataframe
     total_count = len(df)
 
-    # Filter based on the price range
     min_price, max_price = map(int, price_range.split('-'))
     filtered_df = df[(df['Harga (RP)'] >= min_price) & (df['Harga (RP)'] <= max_price)]
 
-    # Normalizing and Clustering
     features = filtered_df[['CPU Cores', 'Speed (GHz)', 'RAM (GB)', 'ROM (GB)', 'Screen (in)', 'Camera (MP)', 'Battery (mAh)']]
     scaler = MinMaxScaler()
     features_scaled = scaler.fit_transform(features)
 
-    n_clusters = 3  # Number of cluster
+    n_clusters = 3
 
     if priority == 'performance':
-        performance_features = features_scaled[:, [0, 1, 2, 3]]  # CPU Cores, Speed (GHz), RAM (GB), ROM (GB)
+        performance_features = features_scaled[:, [0, 1, 2, 3]]
         kmeans = KMeans(n_clusters=n_clusters, random_state=42).fit(performance_features)
         cluster_scores = kmeans.transform(performance_features).sum(axis=1)
     elif priority == 'multimedia':
-        multimedia_features = features_scaled[:, [5, 4, 3, 6]]  # Camera (MP), Screen (in), ROM (GB), Battery (mAh)
+        multimedia_features = features_scaled[:, [5, 4, 3, 6]]
         kmeans = KMeans(n_clusters=n_clusters, random_state=42).fit(multimedia_features)
         cluster_scores = kmeans.transform(multimedia_features).sum(axis=1)
     elif priority == 'allrounder':
@@ -114,22 +103,16 @@ def recommendation():
     filtered_df['Cluster'] = kmeans.labels_
     filtered_df['Cluster_Score'] = cluster_scores
 
-    # Menentukan klaster terbaik berdasarkan rata-rata skor fitur dalam klaster
     best_cluster = filtered_df.groupby('Cluster')['Cluster_Score'].mean().idxmin()
 
-    # Filter berdasarkan klaster terbaik
     best_cluster_df = filtered_df[filtered_df['Cluster'] == best_cluster]
 
-    # Filter ulang berdasarkan rentang harga untuk memastikan hanya harga yang diinginkan yang ditampilkan
     best_cluster_df = best_cluster_df[(best_cluster_df['Harga (RP)'] >= min_price) & (best_cluster_df['Harga (RP)'] <= max_price)]
 
-    # Drop the 'Cluster' and 'Cluster_Score' columns
     best_cluster_df = best_cluster_df.drop(columns=['Cluster_Score'])
 
-    # Count of displayed rows
     displayed_count = len(best_cluster_df)
 
-    # Convert the DataFrame to HTML
     table_html = best_cluster_df.to_html(classes='table recommendation-table compact-table', index=False)
     
     formatted_price_range = format_price_range(pr)
@@ -142,14 +125,11 @@ def ahp():
     price_range = request.form['price_range']
     priority = request.form['priorities']
 
-    # Dapatkan hasil filter dari recommendation
     best_cluster_df = get_filtered_recommendations(price_range, priority)
 
-    # Features and labels
     features = best_cluster_df[['CPU Cores', 'Speed (GHz)', 'RAM (GB)', 'ROM (GB)', 'Screen (in)', 'Camera (MP)', 'Battery (mAh)']]
     labels = best_cluster_df['Model']
 
-    # Define the pairwise comparison matrices
     pairwise_matrix_performance = np.array([
         [1, 1, 1, 1/3, 1/9, 1/9, 1/9],
         [1, 1, 1, 1/3, 1/9, 1/9, 1/9],
@@ -180,7 +160,6 @@ def ahp():
         [1, 1, 1, 1, 1, 1, 1]
     ])
 
-    # AHP Calculation
     if priority == 'performance':
         ahp = AHP(pairwise_matrix=pairwise_matrix_performance)
     elif priority == 'multimedia':
@@ -188,28 +167,21 @@ def ahp():
     elif priority == 'allrounder':
         ahp = AHP(pairwise_matrix=pairwise_matrix_all_rounder)
 
-    # Ensure consistency ratio is acceptable
     if ahp.consistency_ratio >= 0.1:
         return "Consistency ratio is too high. Please revise the pairwise comparison matrix."
 
     ahp_scores = ahp.score_alternatives(features)
 
-    # Add AHP scores to DataFrame
     best_cluster_df['AHP_Score'] = ahp_scores
 
-    # Sort by AHP score and select top 10
     sorted_df = best_cluster_df.sort_values(by='AHP_Score', ascending=False).head(10)
 
-    # Add rank column
     sorted_df['Rank'] = range(1, 11)
 
-    # Reorder columns to show Rank first
     sorted_df = sorted_df[['Rank', 'Model', 'AHP_Score'] + [col for col in sorted_df.columns if col not in ['Rank', 'Model', 'AHP_Score']]]
 
-    # Convert to dictionary for table data
     table_data = sorted_df.to_dict('records')
 
-    # Convert the DataFrame to HTML for chart data
     chart_data = sorted_df[['Model', 'AHP_Score']].to_dict(orient='records')
 
     formatted_price_range = format_price_range(price_range)
