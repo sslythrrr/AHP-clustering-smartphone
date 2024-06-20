@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AHP Results</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1 class="my-4">AHP Results</h1>
-        <h2 class="mt-4 mb-3">BEST 10 {{ priorities.upper() }} SMARTPHONE in Range {{ pricerange }}</h2>
+        <h2 class="text-center my-4">Analytic Hierarchy Process Results</h2>
+        <h3 class="text-center mt-4 mb-3">BEST 10 {{ priorities.upper() }} Smartphones in Price {{ pricerange }}</h3>
         <div class="row">
             <div class="col-12">
                 <canvas id="ahpChart"></canvas>
@@ -20,8 +21,8 @@
         <div class="row">
             <div class="col-12">
                 <div class="table-responsive">
-                    <table class="table ahp-table">
-                        <thead>
+                    <table class="table table-hover ahp-table">
+                        <thead class="thead-dark">
                             <tr>
                                 <th>Rank</th>
                                 <th>Smartphone</th>
@@ -39,9 +40,9 @@
                         <tbody>
                             {% for row in table_data %}
                             <tr>
-                                <td>{{ row.Rank }}</td>
-                                <td>{{ row.Model }}</td>
-                                <td>{{ "{:.4f}".format(row.AHP_Score) }}</td>
+                                <td>{{ row['Rank'] }}</td>
+                                <td>{{ row['Model'] }}</td>
+                                <td>{{ "{:.4f}".format(row['AHP_Score']) }}</td>
                                 <td>{{ row['CPU Cores'] }}</td>
                                 <td>{{ row['Speed (GHz)'] }} GHz</td>
                                 <td>{{ row['RAM (GB)'] }} GB</td>
@@ -57,37 +58,66 @@
                 </div>
             </div>
         </div>
+        <div class="row justify-content-center mt-4 mb-5">
+            <div class="col-auto">
+                <a href="/" class="btn btn-danger mr-3">Home</a>
+                <button class="btn btn-success" onclick="downloadExcel()">Download</button>
+            </div>
+        </div>
     </div>
     <script>
+        function downloadExcel() {
+            const data = {{ table_data|tojson }};
+            const reorderedData = data.map(row => ({
+                'Rank': row.Rank,
+                'Smartphone': row.Model,
+                'AHP Score': parseFloat(row.AHP_Score).toFixed(4),
+                'CPU Cores': row['CPU Cores'],
+                'CPU Clock': `${row['Speed (GHz)']} GHz`,
+                'RAM': `${row['RAM (GB)']} GB`,
+                'ROM': `${row['ROM (GB)']} GB`,
+                'Screen': `${row['Screen (in)']} inch`,
+                'Camera': `${row['Camera (MP)']} MP`,
+                'Battery': `${row['Battery (mAh)']} mAh`,
+                'Price': `Rp ${row['Harga (RP)']}`
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(reorderedData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "AHP Results");
+
+            XLSX.writeFile(workbook, 'AHP_Smartphone.xlsx');
+        }
+
         document.addEventListener('DOMContentLoaded', (event) => {
             const chartData = {{ chart_data|tojson }};
             const labels = chartData.map(item => item.Model);
             const scores = chartData.map(item => item.AHP_Score);
             const backgroundColors = [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)',
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)'
+                'rgba(44, 62, 80, 1)',    
+                'rgba(41, 128, 185, 1)',
+                'rgba(39, 174, 96, 1)', 
+                'rgba(243, 156, 18, 1)',
+                'rgba(142, 68, 173, 1)',
+                'rgba(231, 76, 60, 1)', 
+                'rgba(52, 152, 219, 1)',
+                'rgba(26, 188, 156, 1)',
+                'rgba(155, 89, 182, 1)',
+                'rgba(241, 196, 15, 1)' 
             ];
             const borderColors = [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)',
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)'
+                'rgba(52, 73, 94, 1)',  
+                'rgba(41, 128, 185, 1)',
+                'rgba(46, 204, 113, 1)',
+                'rgba(243, 156, 18, 1)',
+                'rgba(155, 89, 182, 1)',
+                'rgba(231, 76, 60, 1)', 
+                'rgba(52, 152, 219, 1)',
+                'rgba(26, 188, 156, 1)',
+                'rgba(142, 68, 173, 1)',
+                'rgba(241, 196, 15, 1)' 
             ];
-
+        
             const ctx = document.getElementById('ahpChart').getContext('2d');
             const ahpChart = new Chart(ctx, {
                 type: 'bar',

@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smartphone Recommendation</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script> <!-- Added Bootstrap JS -->
     <script>
         function onlyOne(checkbox) {
             var checkboxes = document.getElementsByName('priorities');
@@ -13,48 +15,117 @@
                 if (item !== checkbox) item.checked = false;
             });
         }
+
+        $(document).ready(function() {
+            $('#instructionBtn').on('click', function() {
+                $('#instructionModal').modal('show');
+            });
+        });
     </script>
 </head>
-<body class="body-container"">
-    <div class="container my-5">
+<body>
+    <div class="container my-5 position-relative">
+        <div class="instruction-btn position-absolute" style="top: 0px; right: 0px;">
+            <button id="instructionBtn" class="btn btn-secondary rounded-circle" style="background-color: #343a40; border: none; color: white; width: 40px; height: 40px;">?</button>
+        </div>
         <div class="row justify-content-center">
-            <div class="col-md-8">
-                <h1 class="text-center mb-4">Smartphone Recommendation</h1>
+            <div class="col-md-6">
+                <div class="text-center mb-4">
+                    <h1>Smartphone Recommendation</h1>
+                    <p>Find the perfect smartphone for your needs.</p>
+                </div>
                 {% if error %}
                     <div class="alert alert-danger" role="alert">
                         {{ error }}
                     </div>
                 {% endif %}
-                <form action="/recommendation" method="post">
-                    <div class="form-group">
-                        <label for="price_range">Price Range:</label>
-                        <select id="price_range" name="price_range" class="form-control custom-select-width">
-                            <option value="0-1999999">&lt; Rp 2,000,000</option>
-                            <option value="2000000-4999999">Rp 2,000,000 - Rp 4,999,999</option>
-                            <option value="5000000-9999999">Rp 5,000,000 - Rp 9,999.999</option>
-                            <option value="10000000-15000000">Rp 10,000,000 - Rp 15,000,000</option>
-                            <option value="15000000-50000000">&gt; Rp 15,000,000</option>
-                        </select>
+                <div class="card">
+                    <div class="card-body">
+                        <form action="/recommendation" method="post">
+                            <div class="form-group">
+                                <label for="price_range">Price Range:</label>
+                                <select id="price_range" name="price_range" class="form-control custom-select-width">
+                                    <option value="0-1999999">Under Rp 2,000,000</option>
+                                    <option value="2000000-4999999">Rp 2,000,000 - Rp 4,999,999</option>
+                                    <option value="5000000-7999999">Rp 5,000,000 - Rp 7,999,999</option>
+                                    <option value="8000000-10000000">Rp 8,000,000 - Rp 10,000,000</option>
+                                    <option value="10000001-50000000">Above Rp 10,000,000</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Preference:</label>
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" id="performance" name="priorities" value="performance" class="custom-control-input" onclick="onlyOne(this)">
+                                    <label class="custom-control-label" for="performance">Performance</label>
+                                </div>
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" id="multimedia" name="priorities" value="multimedia" class="custom-control-input" onclick="onlyOne(this)">
+                                    <label class="custom-control-label" for="multimedia">Multimedia</label>
+                                </div>
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" id="allrounder" name="priorities" value="allrounder" class="custom-control-input" onclick="onlyOne(this)">
+                                    <label class="custom-control-label" for="allrounder">All Rounder</label>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label>Preference:</label>
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" id="performance" name="priorities" value="performance" class="custom-control-input" onclick="onlyOne(this)">
-                            <label class="custom-control-label" for="performance">Performance</label>
-                        </div>
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" id="multimedia" name="priorities" value="multimedia" class="custom-control-input" onclick="onlyOne(this)">
-                            <label class="custom-control-label" for="multimedia">Multimedia</label>
-                        </div>
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" id="allrounder" name="priorities" value="allrounder" class="custom-control-input" onclick="onlyOne(this)">
-                            <label class="custom-control-label" for="allrounder">All Rounder</label>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-center">
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </div>
-                </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instruction Modal -->
+    <div class="modal fade" id="instructionModal" tabindex="-1" role="dialog" aria-labelledby="instructionModalLabel" aria-hidden="false">
+        <div class="modal-dialog modal-dialog-centered modal-wide" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="instructionModalLabel"><b>Instructions</b></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body helps">
+                    <h5>Welcome to Smartphone Recommendation App</h5>
+                    <h6 class="mb-0"><b>How to use:</b></h6>
+                    <ol>
+                        <li>Select your desired price range from the dropdown menu.</li>
+                        <li>Choose your preference: Performance, Multimedia, or All Rounder.</li>
+                        <li>Click the "Submit" button to get the recommended smartphones.</li>
+                        <li>Proceed to the AHP analysis by clicking the "Proceed to AHP" button.</li>
+                        <li>The AHP results will display the top 10 recommended smartphones based on your selected criteria.</li>
+                    </ol>
+                    <h6 class="mb-0"><b>Process Details:</b></h6>
+                    <ol>
+                        <li>The system filters the smartphone dataset based on the selected price range.</li>
+                        <li>The system clusters the filtered data according to the chosen preference:
+                            <ul>
+                                <li>Performance: Focus on CPU Cores, Speed, RAM, and ROM.</li>
+                                <li>Multimedia: Focus on Camera, Screen, ROM, and Battery.</li>
+                                <li>All Rounder: Focus on all attributes.</li>
+                            </ul>
+                        </li>
+                        <li>After clustering, the system calculates the cluster score for each smartphone.</li>
+                        <li>The best cluster is determined based on the lowest average score.</li>
+                        <li>The system filters the DataFrame to show smartphones only in the best cluster.</li>
+                        <li>For AHP analysis, the system evaluates the recommended smartphones based on the following criteria:
+                            <ul>
+                                <li>Performance: CPU Cores, Speed, RAM, and ROM.</li>
+                                <li>Multimedia: Camera, Screen, ROM, and Battery.</li>
+                                <li>All Rounder: Balanced consideration of all attributes.</li>
+                            </ul>
+                        </li>
+                        <li>The AHP results display the top 10 smartphones based on the selected price range and preference.</li>
+                    </ol>
+                    <h6 class="mb-0"><b>Project Team:</b></h6>
+                    <ul>
+                        <li>Tubagus Panji Anugrah (065121067)</li>
+                        <li>Adam Ramadan (065121062)</li>
+                        <li>Sanda Nurseska Yudha (065121066)</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
