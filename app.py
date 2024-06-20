@@ -19,7 +19,22 @@ def format_price_range(price_range):
         min_price_formatted = "Rp0"
         max_price_formatted = "under Rp2.000.000"
         return f"{max_price_formatted}"
-        
+    
+    if min_price == 2000000 and max_price == 4999999:
+        min_price_formatted = "Rp2.000.000"
+        max_price_formatted = "Rp4.999.999"
+        return f"{max_price_formatted}"
+    
+    if min_price == 5000000 and max_price == 7999999:
+        min_price_formatted = "Rp5.000.000"
+        max_price_formatted = "Rp7.999.999"
+        return f"{max_price_formatted}"
+    
+    if min_price == 8000000 and max_price == 10000000:
+        min_price_formatted = "Rp8.000.000"
+        max_price_formatted = "Rp10.000.000"
+        return f"{max_price_formatted}"
+    
     if min_price == 10000001 and max_price == 50000000:
         max_price_formatted = "above Rp10.000.000"
         return f"{max_price_formatted}"
