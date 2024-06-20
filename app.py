@@ -61,7 +61,7 @@ def recommendation():
     scaler = MinMaxScaler()
     features_scaled = scaler.fit_transform(features)
 
-    n_clusters = 3  # Number of clusters
+    n_clusters = 3  # Number of cluster
 
     if priority == 'performance':
         performance_features = features_scaled[:, [0, 1, 2, 3]]  # CPU Cores, Speed (GHz), RAM (GB), ROM (GB)
